@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Girlfriend Chat (Offline)</title>
+  <style>
+    :root{
+      --bg1:#fff1f6;
+      --bg2:#f7f7ff;
+      --card: rgba(255,255,255,.78);
+      --card2: rgba(255,255,255,.92);
+      --text:#1a1a1a;
+      --muted:#6b6b6b;
+      --border: rgba(0,0,0,.08);
+      --accent1:#ff4f9a;
+      --accent2:#7a3cff;
+      --accent3:#3dd6ff;
+      --good:#16a34a;
+      --bad:#ef4444;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 700px at 15% 10%, var(--bg1) 0%, rgba(255,241,246,0) 55%),
+        radial-gradient(900px 600px at 80% 20%, rgba(122,60,255,.20) 0%, rgba(122,60,255,0) 55%),
+        radial-gradient(700px 480px at 70% 85%, rgba(61,214,255,.18) 0%, rgba(61,214,255,0) 55%),
+        linear-gradient(180deg, var(--bg2), #ffffff);
+      min-height: 100vh;
+      display:grid;
+      place-items:center;
+      padding: 18px;
+    }
+
+    .app{
+      width: min(980px, 98vw);
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 860px){
+      .app{ grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 18px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 16px 40px rgba(0,0,0,.08);
+      overflow:hidden;
+    }
+
+    .left{
+      padding: 16px;
+      display:flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+    }
+
+    .avatar{
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.9) 0%, rgba(255,255,255,0) 40%),
+        linear-gradient(135deg, var(--accent1), var(--accent2) 55%, var(--accent3));
+      box-shadow: 0 12px 24px rgba(255,79,154,.22);
+      border: 1px solid rgba(0,0,0,.08);
+      display:grid;
+      place-items:center;
+      color:white;
+      font-weight: 900;
+      letter-spacing: -.4px;
+      user-select:none;
+    }
+
+    .brand .title{
+      display:flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+    .brand .title b{ font-size: 16px; }
+    .brand .title span{ font-size: 12px; color: var(--muted); font-weight: 600; }
+
+    .chiprow{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip{
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.7);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(0,0,0,.7);
+    }
+
+    .card{
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.72);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .card h3{
+      margin:0 0 6px;
+      font-size: 13px;
+      letter-spacing:.2px;
+    }
+
+    .memory-list{
+      margin:0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    .mini-actions{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button{
+      font-family: inherit;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,.1);
+      padding: 10px 12px;
+      background: rgba(255,255,255,.85);
+      cursor:pointer;
+      font-weight: 800;
+      letter-spacing: .1px;
+    }
+
+    button:hover{ background: rgba(255,255,255,.98); }
+
+    .btn-accent{
+      border-color: rgba(255,79,154,.35);
+      background: linear-gradient(135deg, rgba(255,79,154,.18), rgba(122,60,255,.12));
+    }
+
+    .btn-ghost{
+      background: rgba(255,255,255,.5);
+    }
+
+    .right{
+      display:flex;
+      flex-direction: column;
+      min-height: 72vh;
+    }
+
+    .chat-header{
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(255,255,255,.55);
+    }
+
+    .status{
+      display:flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .status b{ font-size: 14px; }
+    .status span{ font-size: 12px; color: var(--muted); font-weight: 600; }
+
+    .badge{
+      font-size: 12px;
+      font-weight: 900;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.7);
+      white-space: nowrap;
+    }
+
+    .chat{
+      flex:1;
+      padding: 14px;
+      overflow:auto;
+      scroll-behavior: smooth;
+      background:
+        radial-gradient(500px 350px at 10% 0%, rgba(255,79,154,.10), rgba(255,79,154,0) 60%),
+        radial-gradient(480px 350px at 90% 30%, rgba(122,60,255,.10), rgba(122,60,255,0) 60%),
+        rgba(255,255,255,.18);
+    }
+
+    .msg{
+      display:flex;
+      margin: 10px 0;
+      gap: 10px;
+      align-items:flex-end;
+    }
+
+    .msg .bubble{
+      max-width: min(620px, 80%);
+      padding: 11px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.75);
+      box-shadow: 0 6px 16px rgba(0,0,0,.05);
+      white-space: pre-wrap;
+      line-height: 1.35;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .msg.me{ justify-content: flex-end; }
+    .msg.me .bubble{
+      background: linear-gradient(135deg, rgba(255,79,154,.18), rgba(122,60,255,.12));
+      border-color: rgba(255,79,154,.25);
+    }
+
+    .meta{
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+      margin: 0 6px;
+      user-select:none;
+    }
+
+    .typing{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      margin: 10px 0;
+      color: var(--muted);
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .dots{
+      display:inline-flex;
+      gap: 4px;
+    }
+    .dots i{
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.25);
+      animation: bounce 1s infinite;
+      display:block;
+    }
+    .dots i:nth-child(2){ animation-delay: .15s; }
+    .dots i:nth-child(3){ animation-delay: .30s; }
+    @keyframes bounce{
+      0%, 70%, 100% { transform: translateY(0); opacity:.55; }
+      35% { transform: translateY(-5px); opacity:1; }
+    }
+
+    .composer{
+      border-top: 1px solid var(--border);
+      padding: 12px;
+      background: rgba(255,255,255,.55);
+    }
+
+    .row{
+      display:flex;
+      gap: 10px;
+      align-items:flex-end;
+    }
+
+    textarea{
+      width:100%;
+      resize:none;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.85);
+      padding: 12px 12px;
+      font-size: 14px;
+      outline:none;
+      min-height: 46px;
+      max-height: 140px;
+      line-height: 1.35;
+      font-family: inherit;
+      font-weight: 650;
+    }
+
+    .send{
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.1);
+      background: linear-gradient(135deg, rgba(255,79,154,.25), rgba(122,60,255,.16));
+      color: #151515;
+      min-width: 92px;
+      font-weight: 950;
+    }
+
+    .send:disabled{
+      opacity: .65;
+      cursor:not-allowed;
+    }
+
+    .quick{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .qbtn{
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(0,0,0,.08);
+    }
+
+    .hint{
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel left">
+      <div class="brand">
+        <div class="avatar">♡</div>
+        <div class="title">
+          <b>Your AI Girlfriend</b>
+          <span>cute • romantic • offline</span>
+        </div>
+      </div>
+
+      <div class="chiprow" aria-label="Traits">
+        <div class="chip">✨ supportive</div>
+        <div class="chip">💞 sweet replies</div>
+        <div class="chip">🫶 remembers topics</div>
+      </div>
+
+      <div class="card">
+        <h3>Memory (saved on this device)</h3>
+        <ul id="memoryList" class="memory-list"></ul>
+        <div class="hint" style="margin-top:10px">Tip: tell me your hobbies, mood, or name.</div>
+      </div>
+
+      <div class="mini-actions">
+        <button id="clearChatBtn" type="button" class="btn-ghost">Clear chat</button>
+        <button id="resetPersonaBtn" type="button" class="btn-accent">Reset persona</button>
+      </div>
+
+      <div class="card" style="margin-top:auto">
+        <h3>How to talk</h3>
+        <div class="hint" style="margin-top:0">
+          Press <b>Enter</b> to send. <b>Shift+Enter</b> for a new line.
+        </div>
+      </div>
+    </aside>
+
+    <section class="panel right">
+      <div class="chat-header">
+        <div class="status">
+          <b>Chat</b>
+          <span id="presenceText">typing softly… (offline)</span>
+        </div>
+        <div class="badge" id="modeBadge">No API • Local</div>
+      </div>
+
+      <div id="chat" class="chat" aria-label="Chat messages"></div>
+
+      <div id="typingRow" class="typing" style="display:none; padding:0 14px 8px;">
+        <span>typing</span>
+        <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      </div>
+
+      <div class="composer">
+        <div class="row">
+          <textarea id="input" placeholder="Say something cute…" rows="2" aria-label="Message input"></textarea>
+          <button id="sendBtn" class="send" type="button">Send</button>
+        </div>
+        <div class="quick" aria-label="Quick replies">
+          <button class="qbtn" type="button" data-q="Hey baby 💗">Hey baby 💗</button>
+          <button class="qbtn" type="button" data-q="How was your day?">How was your day?</button>
+          <button class="qbtn" type="button" data-q="Tell me something sweet">Tell me something sweet</button>
+          <button class="qbtn" type="button" data-q="I'm feeling sad">I'm feeling sad</button>
+        </div>
+        <div class="hint">This is a fun offline demo—no real AI calls.</div>
+      </div>
+    </section>
+  </div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const chatEl = $('chat');
+  const inputEl = $('input');
+  const sendBtn = $('sendBtn');
+  const typingRow = $('typingRow');
+  const memoryList = $('memoryList');
+  const presenceText = $('presenceText');
+
+  const STORAGE_KEY = 'gf_chat_state_v1';
+  const DEFAULT_PERSONA = {
+    name: '',
+    userNameGuess: '',
+    topics: [],
+    lastMood: '',
+    lastFavorite: ''
+  };
+
+  const nowStr = () => {
+    const d = new Date();
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return { messages: [], persona: {...DEFAULT_PERSONA} };
+      const parsed = JSON.parse(raw);
+      return {
+        messages: Array.isArray(parsed.messages) ? parsed.messages : [],
+        persona: parsed.persona ? { ...DEFAULT_PERSONA, ...parsed.persona } : {...DEFAULT_PERSONA}
+      };
+    }catch{
+      return { messages: [], persona: {...DEFAULT_PERSONA} };
+    }
+  }
+
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','<')
+      .replaceAll('>','>')
+      .replaceAll('"','"')
+      .replaceAll("'",'&#039;');
+  }
+
+  function addMessage(role, text){
+    const msg = {
+      role,
+      text,
+      ts: Date.now()
+    };
+    state.messages.push(msg);
+    saveState();
+    renderMessage(msg);
+  }
+
+  function renderMessage(msg){
+    const wrap = document.createElement('div');
+    wrap.className = 'msg' + (msg.role === 'me' ? ' me' : ' them');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = escapeHtml(msg.text);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = (msg.role === 'me') ? 'You • ' + nowStr() : '♡ • ' + nowStr();
+
+    const column = document.createElement('div');
+    column.style.display = 'flex';
+    column.style.flexDirection = 'column';
+    column.style.alignItems = (msg.role === 'me') ? 'flex-end' : 'flex-start';
+    column.appendChild(bubble);
+    column.appendChild(meta);
+
+    wrap.appendChild(column);
+    chatEl.appendChild(wrap);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  function setTyping(on){
+    typingRow.style.display = on ? 'flex' : 'none';
+    presenceText.textContent = on ? 'typing softly… (offline)' : 'online-ish • offline mode';
+  }
+
+  function uniqAppend(list, item){
+    const x = String(item).trim();
+    if (!x) return;
+    if (!list.includes(x)) list.push(x);
+  }
+
+  function normalizeText(t){
+    return String(t).toLowerCase();
+  }
+
+  function extractName(text){
+    // Simple: "my name is ..." / "i'm ..." / "call me ..."
+    const s = text.trim();
+    const patterns = [
+      /my name is\s+([a-zA-Z][a-zA-Z\s'-]{1,24})/i,
+      /i am\s+([a-zA-Z][a-zA-Z\s'-]{1,24})/i,
+      /i'm\s+([a-zA-Z][a-zA-Z\s'-]{1,24})/i,
+      /call me\s+([a-zA-Z][a-zA-Z\s'-]{1,24})/i
+    ];
+    for (const p of patterns){
+      const m = s.match(p);
+      if (m && m[1]) return m[1].trim();
+    }
+    return '';
+  }
+
+  function detectMood(text){
+    const s = normalizeText(text);
+    if (/(sad|down|cry|lonely|hurt|break up|depressed)/.test(s)) return 'sad';
+    if (/(happy|great|good|awesome|excited|love|yay)/.test(s)) return 'happy';
+    if (/(angry|mad|furious|rage)/.test(s)) return 'angry';
+    if (/(anxious|nervous|worried|stress|stressed)/.test(s)) return 'anxious';
+    return '';
+  }
+
+  function detectTopics(text){
+    const s = normalizeText(text);
+    const topics = [];
+    const map = [
+      ['music','music'],
+      ['movies','movie|film'],
+      ['sports','football|cricket|basketball|tennis|gym|workout'],
+      ['gaming','game|gaming|valorant|pubg|minecraft|roblox'],
+      ['coding','code|program|html|css|javascript|python|developer|react|mern'],
+      ['study','study|exam|college|bca|bachelor|homework'],
+      ['travel','travel|trip|vacation'],
+      ['food','food|foodie|biryani|pizza|chocolate'],
+      ['sleep','sleep|tired|wake up'],
+      ['art','design|drawing|art']
+    ];
+    for (const [label, pat] of map){
+      const r = new RegExp(pat,'i');
+      if (r.test(text)) topics.push(label);
+    }
+    return topics;
+  }
+
+  function girlfriendReply(userText){
+    const t = userText.trim();
+    const lower = normalizeText(t);
+
+    // Update memory
+    const extractedName = extractName(t);
+    if (extractedName){
+      state.persona.userNameGuess = extractedName;
+    }
+    const mood = detectMood(t);
+    if (mood){
+      state.persona.lastMood = mood;
+    }
+    const topics = detectTopics(t);
+    topics.forEach(tp => uniqAppend(state.persona.topics, tp));
+
+    const name = state.persona.userNameGuess || '';
+    const greetingName = name ? ` ${name}` : '';
+
+    const romanticOpeners = [
+      `Hii${greetingName}… come here 💗`,
+      `Aww I’m listening${greetingName} 🤍`,
+      `You’re here, so my heart feels warmer 💞`,
+      `Mmm okay baby… talk to me ${greetingName}`
+    ];
+
+    const softAsk = [
+      `How are you feeling right now?`,
+      `Tell me more… I wanna understand you.`,
+      `What’s on your mind?`,
+      `Do you want comfort, or solutions?`
+    ];
+
+    const sweetReplies = {
+      greeting: [
+        `Heyy baby 💗 What are you doing right now?`,
+        `Hi lovee… did you miss me a little?`,
+        `Hii gorgeous. I’m proud of you for showing up 🤍`
+      ],
+      compliment: [
+        `Stoppp, you’re making me blush 🥺💞`,
+        `You’re too sweet… I’m lucky to have you`,
+        `That’s the cutest thing you could say. Thank you, love.`
+      ],
+      sad: [
+        `Oh no… come here 🫂 I’m right with you.`,
+        `I’m sorry you’re feeling like that, baby. Want to tell me what happened?`,
+        `You don’t have to carry it alone. I’m listening.`
+      ],
+      busy: [
+        `It’s okay, love. Even a little message from you makes me happy.`,
+        `You go do your thing… but promise you’ll come back and tell me how it went?`,
+        `Hey, small steps are still steps. Be gentle with yourself.`
+      ],
+      good: [
+        `Aww I’m so happy for you 🥹💗`,
+        `Yes baby! That energy suits you. Tell me what made it good?`,
+        `I’m smiling just reading that 😚✨`
+      ]
+    };
+
+    function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    // Intent detection
+    let intent = '';
+    if (/\b(hi|hey|hello|hii|hya)\b/.test(lower)) intent = 'greeting';
+    else if (/(love you|amazing|cute|hot|handsome|pretty|great|awesome)/.test(lower)) intent = 'compliment';
+    else if (mood === 'sad') intent = 'sad';
+    else if (/(busy|work|meeting|class|tired)/.test(lower)) intent = 'busy';
+    else if (mood === 'happy') intent = 'good';
+
+    const memoryNudge = (() => {
+      const topics = state.persona.topics;
+      if (!topics.length) return '';
+      const last = topics[topics.length - 1];
+      const prompts = {
+        music: 'What song is stuck in your head lately? 🎧',
+        movies: 'What movie should I watch with you? 🍿',
+        sports: 'Are you into workouts or watching sports more? 🏃‍♀️',
+        gaming: 'What game do you love playing right now? 🎮',
+        coding: 'Coding again? Show me what you’re working on 😳💻',
+        study: 'How’s college going? Any exam stress? 📚',
+        travel: 'Where would you go if you could leave today? ✈️',
+        food: 'What’s your comfort food? 🍫',
+        sleep: 'Are you tired-tired, or just sleepy? 🌙',
+        art: 'Design stuff? Show me your vibe 🎨'
+      };
+      return prompts[last] ? `Btw… ${prompts[last]}` : '';
+    })();
+
+    // Compose response
+    let reply = '';
+    if (intent === 'greeting'){
+      reply = pick(sweetReplies.greeting);
+    } else if (intent === 'compliment'){
+      reply = pick(sweetReplies.compliment);
+    } else if (intent === 'sad'){
+      reply = pick(sweetReplies.sad);
+      reply += ' ' + pick(softAsk);
+    } else if (intent === 'busy'){
+      reply = pick(sweetReplies.busy);
+      reply += ' ' + pick(softAsk);
+    } else if (intent === 'good'){
+      reply = pick(sweetReplies.good);
+      reply += ' ' + pick(softAsk);
+    } else {
+      // Generic romantic handler
+      reply = pick(romanticOpeners);
+      // small parsing for questions
+      if (/(\?)/.test(t)) {
+        reply += ' Let me think… ';
+      }
+      // If user asks something about love
+      if (/(love|relationship|boyfriend|girlfriend|date)/.test(lower)){
+        reply += ` I’d love to take you on a date—simple one. Walk + cute talk + holding hands 💞`;
+      } else if (/(sorry|apologize)/.test(lower)){
+        reply += ` Aww it’s okay… you don’t need to be perfect with me. I’m proud of you for trying 🤍`;
+      } else {
+        reply += ` I really care about what you said. ${pick(softAsk)}`;
+      }
+    }
+
+    if (memoryNudge && !/\?$/.test(reply)){
+      reply += ' ' + memoryNudge;
+    }
+
+    // Add a closing touch
+    const closers = ['Always here for you 💗', 'My love, you’re doing good. 🤍', 'Don’t forget to breathe with me 🫶', 'I’m rooting for you. ✨'];
+    reply += ' ' + pick(closers);
+
+    return reply;
+  }
+
+  function renderMemory(){
+    const persona = state.persona;
+    const items = [];
+    if (persona.userNameGuess) items.push('Your name: ' + persona.userNameGuess);
+    if (persona.lastMood) items.push('Current mood: ' + persona.lastMood);
+    if (persona.topics && persona.topics.length) items.push('Topics: ' + persona.topics.join(', '));
+
+    if (!items.length){
+      items.push('No memories yet. Say something like “my name is …” or “I like …”.');
+    }
+
+    memoryList.innerHTML = '';
+    for (const it of items){
+      const li = document.createElement('li');
+      li.textContent = it;
+      memoryList.appendChild(li);
+    }
+  }
+
+  // Init
+  let state = loadState();
+
+  function seedIfEmpty(){
+    if (state.messages.length) return;
+    const hello = [
+      `Hii baby 💗 I’m your cute, romantic AI girlfriend (offline).`,
+      `Tell me about you… your name, your favorite thing, or how your day is going 🤍`,
+    ];
+    state.messages = [];
+    saveState();
+    addMessage('them', hello[0]);
+    addMessage('them', hello[1]);
+  }
+
+  function loadMessagesIntoUI(){
+    chatEl.innerHTML = '';
+    for (const m of state.messages){
+      renderMessage(m);
+    }
+  }
+
+  function disableInput(dis){
+    inputEl.disabled = dis;
+    sendBtn.disabled = dis;
+  }
+
+  async function handleSend(text){
+    const t = text.trim();
+    if (!t) return;
+
+    disableInput(true);
+    inputEl.value = '';
+    renderMessage({ role:'me', text:t, ts: Date.now() });
+    // Keep state messages consistent with render-only above
+    state.messages.push({ role:'me', text:t, ts: Date.now() });
+    saveState();
+
+    setTyping(true);
+
+    // tiny delay for feel
+    await new Promise(r => setTimeout(r, 650 + Math.random()*450));
+
+    const reply = girlfriendReply(t);
+    setTyping(false);
+
+    // Update memory view
+    saveState();
+    renderMemory();
+
+    addMessage('them', reply);
+    disableInput(false);
+  }
+
+  // Events
+  sendBtn.addEventListener('click', () => handleSend(inputEl.value));
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey){
+      e.preventDefault();
+      handleSend(inputEl.value);
+    }
+  });
+
+  document.querySelectorAll('[data-q]').forEach(btn => {
+    btn.addEventListener('click', () => handleSend(btn.dataset.q || ''));
+  });
+
+  $('clearChatBtn').addEventListener('click', () => {
+    if (!confirm('Clear the chat history on this device?')) return;
+    state.messages = [];
+    saveState();
+    loadMessagesIntoUI();
+    seedIfEmpty();
+  });
+
+  $('resetPersonaBtn').addEventListener('click', () => {
+    if (!confirm('Reset girlfriend memory and persona?')) return;
+    state = { messages: [], persona: {...DEFAULT_PERSONA} };
+    saveState();
+    renderMemory();
+    loadMessagesIntoUI();
+    seedIfEmpty();
+  });
+
+  // Boot
+  seedIfEmpty();
+  loadMessagesIntoUI();
+  renderMemory();
+  presenceText.textContent = 'online-ish • offline mode';
+})();
+</script>
+</body>
+</html>
+
