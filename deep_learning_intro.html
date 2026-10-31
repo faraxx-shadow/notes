@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Learning with TensorFlow & Keras</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .header:hover {
+            transform: translateY(-5px);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #666;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab-button {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #333;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .content-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .topic-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: white;
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .topic-card:hover {
+            transform: translateX(10px);
+        }
+
+        .topic-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Monaco', monospace;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-example::before {
+            content: "💻 Code Example";
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: #4299e1;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .interactive-demo {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .demo-button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .demo-button:hover {
+            background: #3182ce;
+            transform: scale(1.05);
+        }
+
+        .progress-indicator {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .neural-network-viz {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .layer {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .neuron {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .connection {
+            width: 60px;
+            height: 2px;
+            background: #667eea;
+            margin: 19px 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .quiz-container {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .quiz-option {
+            background: white;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-option:hover {
+            background: #e2e8f0;
+            transform: translateX(5px);
+        }
+
+        .resource-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .resource-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .neural-network-viz {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Deep Learning Mastery</h1>
+            <p>Master TensorFlow & Keras for Neural Networks, CNNs, RNNs, and NLP</p>
+            <div class="progress-indicator">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-button active" onclick="showSection('basics')">🔰 Neural Network Basics</button>
+            <button class="tab-button" onclick="showSection('cnn')">🖼️ CNNs</button>
+            <button class="tab-button" onclick="showSection('rnn')">🔄 RNNs</button>
+            <button class="tab-button" onclick="showSection('nlp')">📝 NLP</button>
+            <button class="tab-button" onclick="showSection('advanced')">🚀 Advanced Topics</button>
+            <button class="tab-button" onclick="showSection('resources')">📚 Resources</button>
+        </div>
+
+        <!-- Neural Network Basics Section -->
+        <div id="basics" class="content-section active">
+            <div class="topic-card">
+                <h3>🧠 Neural Network Fundamentals</h3>
+                <p>Neural networks are computational models inspired by biological neural networks. They consist of interconnected nodes (neurons) organized in layers.</p>
+                
+                <div class="neural-network-viz">
+                    <div class="layer">
+                        <div class="neuron">x₁</div>
+                        <div class="neuron">x₂</div>
+                        <div class="neuron">x₃</div>
+                        <small>Input Layer</small>
+                    </div>
+                    <div class="connection"></div>
+                    <div class="layer">
+                        <div class="neuron">h₁</div>
+                        <div class="neuron">h₂</div>
+                        <div class="neuron">h₃</div>
+                        <div class="neuron">h₄</div>
+                        <small>Hidden Layer</small>
+                    </div>
+                    <div class="connection"></div>
+                    <div class="layer">
+                        <div class="neuron">y</div>
+                        <small>Output Layer</small>
+                    </div>
+                </div>
+
+                <div class="code-example">
+import tensorflow as tf
+from tensorflow import keras
+
+# Simple Neural Network
+model = keras.Sequential([
+    keras.layers.Dense(64, activation='relu', input_shape=(784,)),
+    keras.layers.Dense(32, activation='relu'),
+    keras.layers.Dense(10, activation='softmax')
+])
+
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+                </div>
+            </div>
+
+            <div class="topic-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <h3>⚡ Activation Functions</h3>
+                <p>Activation functions introduce non-linearity to neural networks, enabling them to learn complex patterns.</p>
+                
+                <div class="interactive-demo">
+                    <h4>🎮 Interactive Activation Functions</h4>
+                    <button class="demo-button" onclick="showActivation('relu')">ReLU</button>
+                    <button class="demo-button" onclick="showActivation('sigmoid')">Sigmoid</button>
+                    <button class="demo-button" onclick="showActivation('tanh')">Tanh</button>
+                    <div id="activationResult" style="margin-top: 15px; font-weight: bold;"></div>
+                </div>
+
+                <div class="code-example">
+# Common activation functions in TensorFlow
+import tensorflow as tf
+
+# ReLU: f(x) = max(0, x)
+relu_output = tf.nn.relu([-2, -1, 0, 1, 2])
+
+# Sigmoid: f(x) = 1 / (1 + e^(-x))
+sigmoid_output = tf.nn.sigmoid([-2, -1, 0, 1, 2])
+
+# Tanh: f(x) = (e^x - e^(-x)) / (e^x + e^(-x))
+tanh_output = tf.nn.tanh([-2, -1, 0, 1, 2])
+                </div>
+            </div>
+
+            <div class="quiz-container">
+                <div class="quiz-question">🤔 Quick Quiz: What is the main purpose of activation functions?</div>
+                <div class="quiz-option" onclick="checkAnswer(this, true)">A) To speed up training</div>
+                <div class="quiz-option" onclick="checkAnswer(this, true)">B) To reduce overfitting</div>
+                <div class="quiz-option" onclick="checkAnswer(this, true)">C) To introduce non-linearity</div>
+                <div class="quiz-option" onclick="checkAnswer(this, true)">D) To normalize inputs</div>
+            </div>
+        </div>
+
+        <!-- CNN Section -->
+        <div id="cnn" class="content-section">
+            <div class="topic-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                <h3>🖼️ Convolutional Neural Networks (CNNs)</h3>
+                <p>CNNs are specialized neural networks for processing grid-like data such as images. They use convolutional layers to detect features.</p>
+
+                <div class="code-example">
+import tensorflow as tf
+from tensorflow import keras
+
+# CNN for image classification
+model = keras.Sequential([
+    keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+    keras.layers.MaxPooling2D((2, 2)),
+    keras.layers.Conv2D(64, (3, 3), activation='relu'),
+    keras.layers.MaxPooling2D((2, 2)),
+    keras.layers.Flatten(),
+    keras.layers.Dense(64, activation='relu'),
+    keras.layers.Dense(10, activation='softmax')
+])
+
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+                </div>
+            </div>
+
+            <div class="topic-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                <h3>🔍 CNN Components</h3>
+                <p><strong>Convolutional Layers:</strong> Apply filters to detect features like edges, textures</p>
+                <p><strong>Pooling Layers:</strong> Reduce spatial dimensions and computational load</p>
+                <p><strong>Fully Connected Layers:</strong> Perform final classification</p>
+
+                <div class="interactive-demo">
+                    <h4>🎮 Explore CNN Operations</h4>
+                    <button class="demo-button" onclick="simulateConvolution()">Convolution</button>
+                    <button class="demo-button" onclick="simulatePooling()">Max Pooling</button>
+                    <div id="cnnResult" style="margin-top: 15px; font-weight: bold;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RNN Section -->
+        <div id="rnn" class="content-section">
+            <div class="topic-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h3>🔄 Recurrent Neural Networks (RNNs)</h3>
+                <p>RNNs are designed for sequential data, maintaining memory of previous inputs through recurrent connections.</p>
+
+                <div class="code-example">
+import tensorflow as tf
+from tensorflow import keras
+
+# LSTM for sequence prediction
+model = keras.Sequential([
+    keras.layers.LSTM(50, return_sequences=True, input_shape=(timesteps, features)),
+    keras.layers.LSTM(50, return_sequences=False),
+    keras.layers.Dense(25),
+    keras.layers.Dense(1)
+])
+
+model.compile(optimizer='adam', loss='mse')
+
+# GRU alternative
+model_gru = keras.Sequential([
+    keras.layers.GRU(50, return_sequences=True, input_shape=(timesteps, features)),
+    keras.layers.GRU(50),
+    keras.layers.Dense(1)
+])
+                </div>
+            </div>
+
+            <div class="topic-card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                <h3>🧠 RNN Variants</h3>
+                <p><strong>LSTM:</strong> Long Short-Term Memory - solves vanishing gradient problem</p>
+                <p><strong>GRU:</strong> Gated Recurrent Unit - simpler alternative to LSTM</p>
+                <p><strong>Bidirectional RNNs:</strong> Process sequences in both directions</p>
+
+                <div class="interactive-demo">
+                    <h4>📊 RNN Applications</h4>
+                    <button class="demo-button" onclick="showRNNApp('sentiment')">Sentiment Analysis</button>
+                    <button class="demo-button" onclick="showRNNApp('translation')">Machine Translation</button>
+                    <button class="demo-button" onclick="showRNNApp('prediction')">Time Series Prediction</button>
+                    <div id="rnnResult" style="margin-top: 15px; font-weight: bold;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NLP Section -->
+        <div id="nlp" class="content-section">
+            <div class="topic-card" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">
+                <h3>📝 Natural Language Processing</h3>
+                <p>NLP combines neural networks with text processing to understand and generate human language.</p>
+
+                <div class="code-example">
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+# Text preprocessing
+tokenizer = Tokenizer(num_words=10000, oov_token="<OOV>")
+tokenizer.fit_on_texts(training_sentences)
+
+# Convert text to sequences
+sequences = tokenizer.texts_to_sequences(training_sentences)
+padded = pad_sequences(sequences, maxlen=120, truncating='post')
+
+# NLP model with embedding
+model = keras.Sequential([
+    keras.layers.Embedding(10000, 16, input_length=120),
+    keras.layers.LSTM(32),
+    keras.layers.Dense(24, activation='relu'),
+    keras.layers.Dense(1, activation='sigmoid')
+])
+                </div>
+            </div>
+
+            <div class="topic-card" style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);">
+                <h3>🔤 Text Processing Pipeline</h3>
+                <p><strong>Tokenization:</strong> Convert text to numerical tokens</p>
+                <p><strong>Embedding:</strong> Map tokens to dense vector representations</p>
+                <p><strong>Sequence Modeling:</strong> Process sequential text data</p>
+                <p><strong>Classification/Generation:</strong> Output predictions or new text</p>
+            </div>
+        </div>
+
+        <!-- Advanced Topics Section -->
+        <div id="advanced" class="content-section">
+            <div class="topic-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <h3>🚀 Advanced Deep Learning Techniques</h3>
+                
+                <h4>🔧 Transfer Learning</h4>
+                <p>Leverage pre-trained models for new tasks</p>
+                <div class="code-example">
+# Transfer learning with pre-trained model
+base_model = keras.applications.VGG16(weights='imagenet', 
+                                      include_top=False, 
+                                      input_shape=(224, 224, 3))
+base_model.trainable = False
+
+model = keras.Sequential([
+    base_model,
+    keras.layers.GlobalAveragePooling2D(),
+    keras.layers.Dense(128, activation='relu'),
+    keras.layers.Dense(num_classes, activation='softmax')
+])
+                </div>
+
+                <h4>✅ Model Validation & Evaluation</h4>
+                <p>Properly assess model performance</p>
+                <div class="code-example">
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
+
+# Split data
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
+
+# Train with validation
+history = model.fit(X_train, y_train,
+                    validation_data=(X_val, y_val),
+                    epochs=50,
+                    callbacks=[
+                        keras.callbacks.EarlyStopping(patience=5),
+                        keras.callbacks.ModelCheckpoint('best_model.h5')
+                    ])
+                </div>
+            </div>
+
+            <div class="topic-card" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+                <h3>⚡ Optimization & Training Tips</h3>
+                <p><strong>Loss Functions:</strong> Choose appropriate loss for your task</p>
+                <p><strong>Optimizers:</strong> Adam, SGD, RMSprop for different scenarios</p>
+                <p><strong>Regularization:</strong> Dropout, L1/L2 to prevent overfitting</p>
+                <p><strong>Hyperparameter Tuning:</strong> Grid search, random search, Bayesian optimization</p>
+            </div>
+        </div>
+
+        <!-- Resources Section -->
+        <div id="resources" class="content-section">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #333;">📚 Learning Resources & Tools</h2>
+            
+            <div class="resource-links">
+                <div class="resource-card">
+                    <h4>🔗 Official Documentation</h4>
+                    <p>TensorFlow and Keras official guides</p>
+                    <ul>
+                        <li>TensorFlow.org</li>
+                        <li>Keras.io</li>
+                        <li>TensorFlow Tutorials</li>
+                    </ul>
+                </div>
+                
+                <div class="resource-card">
+                    <h4>📖 Books & Courses</h4>
+                    <p>Recommended learning materials</p>
+                    <ul>
+                        <li>Deep Learning by Goodfellow</li>
+                        <li>Hands-On Machine Learning</li>
+                        <li>Deep Learning Specialization</li>
+                    </ul>
+                </div>
+                
+                <div class="resource-card">
+                    <h4>🛠️ Tools & Libraries</h4>
+                    <p>Essential development tools</p>
+                    <ul>
+                        <li>Google Colab</li>
+                        <li>Jupyter Notebooks</li>
+                        <li>TensorBoard</li>
+                    </ul>
+                </div>
+                
+                <div class="resource-card">
+                    <h4>🎯 Practice Datasets</h4>
+                    <p>Data for hands-on practice</p>
+                    <ul>
+                        <li>MNIST, CIFAR-10</li>
+                        <li>IMDB Reviews</li>
+                        <li>Kaggle Competitions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="topic-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-top: 30px;">
+                <h3>🎓 Next Steps</h3>
+                <p>1. <strong>Practice:</strong> Implement each concept with real datasets</p>
+                <p>2. <strong>Projects:</strong> Build end-to-end applications</p>
+                <p>3. <strong>Advanced Topics:</strong> Explore GANs, Transformers, Reinforcement Learning</p>
+                <p>4. <strong>Deploy:</strong> Learn to deploy models in production</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProgress = 0;
+
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Hide all tab buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            
+            // Show selected section and activate button
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Update progress
+            updateProgress();
+        }
+
+        function updateProgress() {
+            currentProgress += 16.67; // 100/6 sections
+            if (currentProgress > 100) currentProgress = 100;
+            document.getElementById('progressBar').style.width = currentProgress + '%';
+        }
+
+        function showActivation(type) {
+            const result = document.getElementById('activationResult');
+            const examples = {
+                relu: 'ReLU(x) = max(0, x)\nInput: [-2, -1, 0, 1, 2]\nOutput: [0, 0, 0, 1, 2]',
+                sigmoid: 'Sigmoid(x) = 1/(1+e^(-x))\nInput: [-2, -1, 0, 1, 2]\nOutput: [0.12, 0.27, 0.5, 0.73, 0.88]',
+                tanh: 'Tanh(x) = (e^x - e^(-x))/(e^x + e^(-x))\nInput: [-2, -1, 0, 1, 2]\nOutput: [-0.96, -0.76, 0, 0.76, 0.96]'
+            };
+            result.innerHTML = examples[type].replace(/\n/g, '<br>');
+        }
+
+        function checkAnswer(element, isCorrect) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(option => {
+                option.style.backgroundColor = '#e2e8f0';
+                option.style.color = '#333';
+            });
+            
+            if (isCorrect) {
+                element.style.backgroundColor = '#48bb78';
+                element.style.color = 'white';
+                element.innerHTML += ' ✅ Correct!';
+            } else {
+                element.style.backgroundColor = '#f56565';
+                element.style.color = 'white';
+                element.innerHTML += ' ❌ Try again!';
+            }
+        }
+
+        function simulateConvolution() {
+            document.getElementById('cnnResult').innerHTML = 
+                '🔍 Convolution applies filters to detect features:<br>Filter slides across image → Feature maps created';
+        }
+
+        function simulatePooling() {
+            document.getElementById('cnnResult').innerHTML = 
+                '📉 Max Pooling reduces spatial dimensions:<br>2x2 window → Takes maximum value → Reduces size by 75%';
+        }
+
+        function showRNNApp(app) {
+            const result = document.getElementById('rnnResult');
+            const apps = {
+                sentiment: '😊 Sentiment Analysis: "This movie is great!" → Positive (0.89)',
+                translation: '🌍 Translation: "Hello" → "Hola" (Spanish)',
+                prediction: '📈 Time Series: Stock prices → Next day prediction'
+            };
+            result.innerHTML = apps[app];
+        }
+
+        // Initialize progress
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+        });
+    </script>
+</body>
+</html>
